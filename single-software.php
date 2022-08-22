@@ -24,8 +24,8 @@ $engineers = new WP_Query(
 			array(
 				'key'     => 'date_of_birth',
 				'value'   => $year,
-				// Change >= with < for less than 25 years old
-				'compare' => '>=',
+				// Change < with >= for less than 25 years old
+				'compare' => '<',
 				'type'    => 'DATE',
 			),
 		),
