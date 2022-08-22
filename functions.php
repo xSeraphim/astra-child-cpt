@@ -15,6 +15,30 @@ add_action('astra_head_top', 'wpr_add_nav_sticky');
 
 //Engineer CPT
 function register_engineer_cpt() {
+	$taxargs = array(
+		'labels' =>	array(
+		'name'              => __( 'Role', '' ),
+		'singular_name'     => __( 'Role', '' ),
+		'search_items'      => __( 'Search Roles', '' ),
+		'all_items'         => __( 'All Roles', '' ),
+		'parent_item'       => __( 'Parent Role', '' ),
+		'parent_item_colon' => __( 'Parent Role:', '' ),
+		'edit_item'         => __( 'Edit Role', '' ),
+		'update_item'       => __( 'Update Role', '' ),
+		'add_new_item'      => __( 'Add new Role', '' ),
+		'new_item_name'     => __( 'New Role', '' ),
+		),
+		'hierarchical'	=> true,
+		'show_ui' => true,
+		'show_admin_column' => true,
+		'show_in_rest' => true,
+		'rewrite' => array(
+			'slug' => 'role',
+		)
+
+	);
+	register_taxonomy('role', array('role'), $taxargs);
+
 	$args = array(
 		'label'               => __( 'Engineers', '' ),
 		'labels'              => array(
@@ -41,8 +65,8 @@ function register_engineer_cpt() {
 		'hierarchical'        => true,
 		'query_var'           => true,
 		'supports'            => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
-		// 'taxonomies'          => array( 'Roles', 'Regions' ),
-		'menu_position'       => 5,
+		'taxonomies'          => array( 'role' ),
+		'menu_position'       => 4,
 		'menu_icon'           => 'dashicons-groups',
 	);
 	register_post_type( 'engineer', $args );
@@ -54,6 +78,30 @@ add_action( 'init', 'register_engineer_cpt' );
 
 // Software CPT
 function register_software_cpt() {
+	$taxargs = array(
+		'labels' =>	array(
+		'name'              => __( 'Country', '' ),
+		'singular_name'     => __( 'Country', '' ),
+		'search_items'      => __( 'Search Country', '' ),
+		'all_items'         => __( 'All Countries', '' ),
+		'parent_item'       => __( 'Parent Country', '' ),
+		'parent_item_colon' => __( 'Parent Country:', '' ),
+		'edit_item'         => __( 'Edit Country', '' ),
+		'update_item'       => __( 'Update Country', '' ),
+		'add_new_item'      => __( 'Add new Country', '' ),
+		'new_item_name'     => __( 'New Country', '' ),
+		),
+		'hierarchical'	=> true,
+		'show_ui' => true,
+		'show_admin_column' => true,
+		'show_in_rest' => true,
+		'rewrite' => array(
+			'slug' => 'country',
+		)
+
+	);
+	register_taxonomy('country', array('country'), $taxargs);
+
 	$args = array(
 		'label'               => __( 'Software', '' ),
 		'labels'              => array(
@@ -73,14 +121,14 @@ function register_software_cpt() {
 		'publicly_queryable'  => true,
 		'show_ui'             => true,
 		'show_in_rest'        => true,
-		'has_archive'         => false,
+		'has_archive'         => true,
 		'show_in_menu'        => true,
 		'exclude_from_search' => false,
 		'map_meta_cap'        => true,
 		'hierarchical'        => true,
 		'query_var'           => true,
 		'supports'            => array( 'title', 'editor', 'custom-fields' ),
-		// 'taxonomies'          => array( 'Roles', 'Regions' ),
+		'taxonomies'          => array( 'country' ),
 		'menu_position'       => 5,
 		'menu_icon'           => 'dashicons-shield',
 	);
