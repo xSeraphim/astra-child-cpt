@@ -137,3 +137,156 @@ function register_software_cpt() {
 
 }
 add_action( 'init', 'register_software_cpt' );
+// PRODUCT FIELDS CALLBACK
+function api_fields_callback($args) {
+	?>
+	<p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'Edit WPR API SETTINGS.', 'wpr' ); ?></p>
+	<?php
+}
+
+// API SETTINGS
+function product_fields_callback($args) {
+	?>
+	<p id="<?php echo esc_attr( $args['id'] ); ?>"><?php esc_html_e( 'Edit Product Discount SETTINGS.', 'wpr' ); ?></p>
+	<?php
+}
+
+add_action(
+	'admin_init',
+	function(){
+		register_setting('wpr_academy','wpr_option' );
+		// API SECTION AND FIELDS
+		add_settings_section(
+			'api_fields',
+			'API Fields',
+			'api_fields_callback',
+			'wpr_academy' 
+		);
+		add_settings_field(
+			'wpr_api_token',
+			'Api Token',
+			'api_field_callback',
+			'wpr_academy',
+			'api_fields',
+			array(
+				'label_for'       => 'wpr_api_token',
+				'class'           => 'wpr_row',
+				'wpr_custom_data' => 'custom',
+			)
+		);
+		add_settings_field(
+			'wpr_api_client_id',
+			'Api Client ID',
+			'api_field_callback',
+			'wpr_academy',
+			'api_fields',
+			array(
+				'label_for'       => 'wpr_api_client_id',
+				'class'           => 'wpr_row',
+				'wpr_custom_data' => 'custom',
+			)
+		);
+		// PRODUCT DISCOUNT SECTION AND FIELDS
+		add_settings_section(
+			'product_fields_discount',
+			'Product Discount Fields',
+			'product_fields_callback',
+			'wpr_academy' 
+		);
+
+		add_settings_field(
+			'wpr_software_discount',
+			'Software Discount',
+			'product_field_callback',
+			'wpr_academy',
+			'product_fields_discount',
+			array(
+				'label_for'       => 'wpr_software_discount',
+				'class'           => 'wpr_row',
+				'wpr_custom_data' => 'custom',
+			)
+		);
+
+		add_settings_field(
+			'wpr_software_discount_period',
+			'Discount Period',
+			'product_field_callback',
+			'wpr_academy',
+			'product_fields_discount',
+			array(
+				'label_for'       => 'wpr_software_discount_period',
+				'class'           => 'wpr_row',
+				'wpr_custom_data' => 'custom',
+			)
+		);
+	}
+);
+add_action('admin_menu',function(){
+	add_menu_page(
+		'API Settings',
+		'API Options',
+		'manage_options',
+		'wpr-api-settings',
+		'wpr_api_page_html',
+		'dashicons-database',
+		65 
+	);		
+} );
+
+function wpr_api_page_html(){
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	// check if the user have submitted the settings
+	// WordPress will add the "settings-updated" $_GET parameter to the url
+	if ( isset( $_GET['settings-updated'] ) ) {
+		// add settings saved message with the class of "updated"
+		add_settings_error( 'wpr_messages', 'wpr_message', __( 'Settings Saved', 'wpr' ), 'updated' );
+	}
+
+	// show error/update messages
+	settings_errors( 'wpr_messages' );
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+		<form action="options.php" method="post">
+			<?php
+			// output security fields for the registered setting "wpr_academy"
+			settings_fields( 'wpr_academy' );
+
+			// output setting sections and their fields
+			// (sections are registered for "wpr_academy", each field is registered to a specific section)
+			do_settings_sections( 'wpr_academy' );
+			// output save settings button
+			submit_button( 'Save Settings' );
+			?>
+		</form>
+	</div>
+	<?php
+}
+function api_field_callback( $args ) {
+	// Get the value of the setting we've registered with register_setting()
+	$options = get_option( 'wpr_option' );
+	?>
+	
+<input
+		value="<?php echo $options[$args['label_for']]; ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
+		data-custom="<?php echo esc_attr( $args['wpr_custom_data'] ); ?>"
+		name="wpr_option[<?php echo esc_attr( $args['label_for'] ); ?>]"
+		type="text">
+	<?php
+}
+function product_field_callback( $args ) {
+	// Get the value of the setting we've registered with register_setting()
+	$options = get_option( 'wpr_option' );
+	?>
+	
+<input
+		value="<?php echo $options[$args['label_for']]; ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
+		data-custom="<?php echo esc_attr( $args['wpr_custom_data'] ); ?>"
+		name="wpr_option[<?php echo esc_attr( $args['label_for'] ); ?>]"
+		type="number">
+	<?php
+}
