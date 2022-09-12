@@ -8,10 +8,12 @@ $args = array(
 // Loop for engineer posts
 $loop = new WP_Query( $args );
 if ( have_posts() ) {
+	echo do_shortcode('[shortcode_search]');
+	echo '<div id="archive-engineers">';
 	while ( $loop->have_posts() ) :
 		$loop->the_post();
 		?>
-<section class="content">	
+<section  class="content">	
 	<div class="column-1">
 		<img src=<?php echo get_the_post_thumbnail_url(); ?> class="image">
 	</div>

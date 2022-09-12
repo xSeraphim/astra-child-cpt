@@ -2,6 +2,7 @@
 
 function wpr_add_style() {
     wp_enqueue_style('wpr-academy-style', get_stylesheet_directory_uri() . '/style.css');
+	
 }
 add_action('wp_enqueue_scripts', 'wpr_add_style');
 
@@ -290,3 +291,105 @@ function product_field_callback( $args ) {
 		type="number">
 	<?php
 }
+
+
+
+// function add_text_after_addtocart() {
+	
+// 	$product = wc_get_product(get_the_ID());
+// 	$product_price = intval($product->get_price());
+// 	if (50 > $product_price) {
+// 		echo '<p>E mai mic!</p>';
+// 	}
+	
+// }
+
+// add_action('woocommerce_after_add_to_cart_form', 'add_text_after_addtocart');
+// add_action('woocommerce_after_shop_loop_item_title', 'add_text_after_addtocart', 11);
+
+
+// remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_title', 5 );
+// add_action('woocommerce_single_product_summary', function(){
+// 	echo 'title';
+// }, 5);
+// add_action('wpr_single_product_title', function(){
+// 	echo 'Avion !';
+
+
+// });
+function modal() { 
+	wp_enqueue_script('wpr-academy-script', get_stylesheet_directory_uri() . '/assets/quickview.js', array('jquery'), '1.0.0', true);
+	wp_enqueue_script('wc-add-to-cart-variation');
+	wp_localize_script(
+		'wpr-academy-script',
+		'WPR',
+		array(
+			'ajax_url'   => admin_url( 'admin-ajax.php' ),
+			'ajax_nonce' => wp_create_nonce( 'wpr-academy-script' ),
+		)
+	);
+	
+	?>
+	
+
+	<div id="myModal" class="modal">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<span class="close">&times;</span>
+		<h2>Quick View Product</h2>
+	  </div>
+	  <div class="modal-body" id="modal-body">
+	  </div>
+	  <div class="modal-footer">
+		<h3>Modal Footer</h3>
+	  </div>
+	</div>
+  
+  </div>
+
+<?php
+}
+
+
+
+function show_product() { 
+	global $product;
+	// error_log(print_r($product, true));
+	$product_id = $_GET['item']; 
+	$product = wc_get_product( $product_id );
+	
+	// error_log(print_r($product, true));
+
+	// $product = wc_get_product( $product_id );
+	$url = $product->get_permalink();
+	$type = $product->get_type();
+	$my_var = null;
+	if ($product->is_type('variable')) {
+		ob_start();
+		woocommerce_variable_add_to_cart();
+		$my_var = ob_get_clean();
+	}
+
+	$content = array(
+		'title' =>$product->get_name(),
+		'price' => $product->get_price_html(),
+		'image' => $product->get_image(),
+		'short_description' => $product->get_short_description(),
+		'url' => $product->get_permalink(),
+		'summary' => $my_var,
+		
+		
+	);
+
+	echo wp_json_encode( $content );
+	wp_die();
+	
+}
+// LOAD THE MODAL ON BOTTOM OF THE PAGE AND DISPLAY NONE
+add_action('woocommerce_after_main_content', 'modal');
+add_action('wp_ajax_show_product', 'show_product');
+add_action( 'wp_ajax_nopriv_show_product', 'show_product' );
+
+
+
+
