@@ -25,7 +25,8 @@
                             <p>${data['short_description']}</p>
                             <hr>
                             ${data['summary']}
-                           </div>`;
+                           <p>Product Categories: ${data['categories']}</p>
+                            </div>`;
                         
             // $('#modal-body').html(data.content);
             $('#modal-body').append(html);

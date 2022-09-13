@@ -319,7 +319,6 @@ function product_field_callback( $args ) {
 // });
 function modal() { 
 	wp_enqueue_script('wpr-academy-script', get_stylesheet_directory_uri() . '/assets/quickview.js', array('jquery'), '1.0.0', true);
-	wp_enqueue_script('wc-add-to-cart-variation');
 	wp_localize_script(
 		'wpr-academy-script',
 		'WPR',
@@ -363,10 +362,14 @@ function show_product() {
 	// $product = wc_get_product( $product_id );
 	$url = $product->get_permalink();
 	$type = $product->get_type();
-	$my_var = null;
+	
 	if ($product->is_type('variable')) {
 		ob_start();
 		woocommerce_variable_add_to_cart();
+		$my_var = ob_get_clean();
+	}else {
+		ob_start();
+		woocommerce_simple_add_to_cart();
 		$my_var = ob_get_clean();
 	}
 
@@ -377,6 +380,7 @@ function show_product() {
 		'short_description' => $product->get_short_description(),
 		'url' => $product->get_permalink(),
 		'summary' => $my_var,
+		'categories' => $product->get_categories(),
 		
 		
 	);
