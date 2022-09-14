@@ -1,5 +1,6 @@
 <?php
 
+
 function wpr_add_style() {
     wp_enqueue_style('wpr-academy-style', get_stylesheet_directory_uri() . '/style.css');
 	
@@ -396,4 +397,140 @@ add_action( 'wp_ajax_nopriv_show_product', 'show_product' );
 
 
 
+// ADD CUSTOM PRODUCT FIELDS ONLY IF CATEGORY T-SHIRT
+function wpr_add_custom_fields() {
 
+	global $product;
+	$product_id = $product->get_id();
+	$product_cat = wc_get_product_category_list($product_id);
+	$goodCategory = '/product-category/t-shirt';
+	if (strpos($product_cat, $goodCategory)) {
+		ob_start(); ?>
+		
+		<div class="wpr-custom-fields">
+
+				<p>Please select option where to print</p>
+				<select id="select" class="wpr-custom-field" name="wpr_data">
+					<option selected="selected"  value="none">None</option>
+					<option value="fata">Fata</option>
+					<option value="spate">Spate</option>
+					<option value="fata-spate">Fata+Spate</option>
+					<option value="nepersonalizat">Nepersonalizat</option>
+				</select>
+					<div id="input">
+					<p>Please enter text</p>
+					<input  type="text" class="wpr-custom-field" maxlength="75" name="wpr_data2"></input>
+					</div>
+		</div>
+		<script type="text/javascript">
+			jQuery("select").click(function() {
+			var selectBox = document.getElementById("select");
+			var input = document.getElementById("input");
+			var selectedValue = selectBox.value;
+			
+			if (selectedValue=="none"){
+				input.style.display = "none";
+			}else {
+			input.style.display = "block";
+			}
+		});
+		</script>
+	<?php
+	$content = ob_get_contents();
+    ob_end_flush();
+
+    return $content;
+	}
+	// var_dump($product_cat);
+}
+add_action('woocommerce_before_add_to_cart_button', 'wpr_add_custom_fields');
+
+
+// ADD ENTERED DATA INTO WOOCOMMERCE
+function wpr_add_item_data($cart_item_data, $product_id, $variation_id) {
+	if(isset($_REQUEST['wpr_data']))
+    {
+        $cart_item_data['wpr_data'] = sanitize_text_field($_REQUEST['wpr_data']);
+    }
+	if(isset($_REQUEST['wpr_data2']))
+    {
+		$cart_item_data['wpr_data2'] = sanitize_text_field($_REQUEST['wpr_data2']);
+    }
+
+    return $cart_item_data;
+}
+add_filter('woocommerce_add_cart_item_data','wpr_add_item_data',10,3);
+
+// CHANGE THE GOD DAMN PRICE
+function value_based_pricing( $cart ) {
+
+    if ( is_admin() && ! defined( 'DOING_AJAX' ) ) 
+        return;
+
+    if ( did_action( 'woocommerce_before_calculate_totals' ) >= 2 ) 
+        return;
+
+    // Define the variables
+    $fata = 'fata';
+	$spate = 'spate';
+	$fata_spate = 'fata-spate';
+
+    // Loop through cart items
+    foreach( $cart->get_cart() as $cart_item_key => $cart_item ) {
+        // Get the product price
+        $price = $cart_item['data']->get_price();
+		
+
+        // Check if  variables are present and change the price
+        if( $cart_item['wpr_data'] == $fata || $cart_item['wpr_data'] == $spate) {
+            $bulk_price = $price + 50;
+            $cart_item['data']->set_price( $bulk_price );
+        }
+		if( $cart_item['wpr_data'] == $fata_spate) {
+            $bulk_price = $price + 85;
+            $cart_item['data']->set_price( $bulk_price );
+        }
+    }
+}
+add_action('woocommerce_before_calculate_totals', 'value_based_pricing', 99);
+// ADD DETAILS AS META
+
+function wpr_add_item_meta($item_data, $cart_item){
+
+	if(array_key_exists('wpr_data', $cart_item))
+    {
+        $custom_details = $cart_item['wpr_data'];
+
+        $item_data[] = array(
+            'key'   => 'Where to print',
+            'value' => $custom_details
+        );
+	}
+	if(array_key_exists('wpr_data2', $cart_item))
+	{
+		$custom_details = $cart_item['wpr_data2'];
+	
+		$item_data[] = array(
+			'key'   => 'Your custom text',
+			'value' => $custom_details
+		);
+    }
+
+    return $item_data;
+}
+add_filter('woocommerce_get_item_data','wpr_add_item_meta',10,2);
+
+// ADD TO THE ORDER LINE
+function wpr_add_custom_order_line_item_meta($item, $cart_item_key, $values, $order)
+{
+
+    if(array_key_exists('wpr_data', $values))
+    {
+        $item->add_meta_data('Where to print',$values['wpr_data']);
+    }
+	if(array_key_exists('wpr_data2', $values))
+    {
+        $item->add_meta_data('Your Custom text',$values['wpr_data2']);
+    }
+}
+add_action( 'woocommerce_checkout_create_order_line_item', 'wpr_add_custom_order_line_item_meta',10,4 );
